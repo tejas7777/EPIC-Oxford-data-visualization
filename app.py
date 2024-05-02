@@ -64,36 +64,37 @@ class DataVisualizer():
         return labels
 
 
-    def generate_cluster_labels(self):
-        labels = []
-        label_counts = {}
+    # def generate_cluster_labels(self):
+    #     labels = []
+    #     label_counts = {}
 
-        for cluster_id, dists in self.cluster_distributions.items():
-            top_diet = dists['Diet Distribution'].idxmax()
-            top_diet_prop = dists['Diet Distribution'].max()
+    #     for cluster_id, dists in self.cluster_distributions.items():
+    #         top_diet = dists['Diet Distribution'].idxmax()
+    #         top_diet_prop = dists['Diet Distribution'].max()
 
-            top_gender = dists['Gender Distribution'].idxmax()
-            top_gender_prop = dists['Gender Distribution'].max()
+    #         top_gender = dists['Gender Distribution'].idxmax()
+    #         top_gender_prop = dists['Gender Distribution'].max()
 
-            top_age_group = dists['Age Distribution'].idxmax()
-            top_age_group_prop = dists['Age Distribution'].max()
+    #         top_age_group = dists['Age Distribution'].idxmax()
+    #         top_age_group_prop = dists['Age Distribution'].max()
 
-            label = f"{top_diet} Dominant ({top_diet_prop:.2f}), Largely {top_age_group} ({top_age_group_prop:.2f})"
+    #         label = f"{top_diet} Dominant ({top_diet_prop:.2f}), Largely {top_age_group} ({top_age_group_prop:.2f})"
 
 
-            if label in label_counts:
-                label_counts[label] += 1
-                label += f" - Group {label_counts[label]}"
-            else:
-                label_counts[label] = 1
+    #         if label in label_counts:
+    #             label_counts[label] += 1
+    #             label += f" - Group {label_counts[label]}"
+    #         else:
+    #             label_counts[label] = 1
 
-            labels.append(label)
+    #         labels.append(label)
 
-        return labels
+    #     return labels
     
     def generate_cluster_labels(self):
         labels = []
         label_counts = {}
+        self.cluster_id_label_map = {}
 
         for cluster_id, dists in self.cluster_distributions.items():
             top_diet = dists['Diet Distribution'].idxmax()
@@ -115,9 +116,12 @@ class DataVisualizer():
                 label_counts[label] = 1
 
             labels.append(label)
+            self.cluster_id_label_map[cluster_id] = label
 
         return labels
     
+    def get_cluster_id_label_map(self):
+        return self.cluster_id_label_map
 
 
 
@@ -179,7 +183,7 @@ class DataVisualizer():
                             x='mean_ghgs',  #X-axis - Mean greenhouse gas emissions
                             y='mean_watscar',  #Y-axis - Mean water scarcity
                             z='mean_acid',  #Z-axis - Mean acidification
-                            color='cluster_label',  #Color by cluster label for readability
+                            color='cluster',  #Color by cluster label for readability
                             hover_name='cluster_label',  #Show cluster label on hover
                             hover_data=['hover_text'],  #Custom text with demographic info
                             labels={
@@ -217,26 +221,27 @@ class DataVisualizer():
     
     def plot_parallel_coordinates(self):
 
-        unique_labels = self.df['cluster_label'].unique()
-        label_map = {label: i for i, label in enumerate(unique_labels)}
-        self.df['color'] = self.df['cluster_label'].map(label_map)
+        #unique_labels = self.df['cluster_label'].unique()
+        #label_map = {label: i for i, label in enumerate(unique_labels)}
+        #label_map = {v:k for k,v in self.cluster_id_label_map}
+        #self.df['color'] = self.df['cluster_label'].map(label_map)
 
         fig = px.parallel_coordinates(
             self.df,
-            color='color', 
+            color='cluster', 
             dimensions=['mean_ghgs', 'mean_watscar', 'mean_acid'],
             labels={
                 'mean_ghgs': 'mean_ghgs',
                 'mean_watscar': 'mean_watscar',
                 'mean_acid': 'mean_acid'
             },
-            color_continuous_scale=px.colors.diverging.Tealrose,
+            color_continuous_scale=px.colors.sequential.Sunsetdark,
         )
 
         fig.update_layout(
             coloraxis_colorbar=dict(
-                title='Clusters',
-                tickvals=list(label_map.values())
+                title='cluster',
+                tickvals=list(self.cluster_id_label_map.keys())
             )
         )
 
@@ -257,7 +262,7 @@ app.layout = html.Div([
                 dbc.Col([
                     dbc.Card([
                         dbc.CardBody([
-                            html.H2("Clusters", className="card-title"),
+                            html.H6("Clusters", className="card-title"),
                             dcc.Dropdown(
                                 id='cluster-number',
                                 options=[{'label': str(i), 'value': i} for i in range(2, 10)],
@@ -268,7 +273,7 @@ app.layout = html.Div([
                     ], className="mb-4"),
                     dbc.Card([
                         dbc.CardBody([
-                            html.H2("Labels", className="card-title"),
+                            html.H6("Labels", className="card-title"),
                             dcc.Loading(
                                 id="loading-cluster-labels",
                                 children=[dbc.ListGroup(id='cluster-labels-list', flush=True)],
@@ -284,7 +289,7 @@ app.layout = html.Div([
                                 id="loading-treemap",
                                 children=[dcc.Graph(id='treemap-plot')],
                                 type="default"),
-                        ], style={'padding': '0.5rem'}),
+                        ], style={'padding': '0.0rem'}),
                     ], className="mb-4"),
                 ], width=9, style={'padding-right': '5px', 'padding-left': '5px'}),
             ]),
@@ -298,7 +303,7 @@ app.layout = html.Div([
                                 type="default"),
                         ])
                     ], className="mb-4"),
-                ], width=6, style={'padding-right': '5px', 'padding-left': '5px'}),
+                ], width=6, style={'padding-right': '2px', 'padding-left': '2px'}),
                 dbc.Col([
                     dbc.Card([
                         dbc.CardBody([
@@ -308,7 +313,7 @@ app.layout = html.Div([
                                 type="default"),
                         ])
                     ], className="mb-4"),
-                ], width=6, style={'padding-right': '5px', 'padding-left': '5px'}),
+                ], width=6, style={'padding-right': '2px', 'padding-left': '2px'}),
             ])
         ])
 ])
@@ -337,9 +342,11 @@ def update_output(num_clusters):
     treemap_fig = data_visualizer.plot_treemap()
     scatter_fig = data_visualizer.plot_3D_scatter_plot()
     parallel_fig = data_visualizer.plot_parallel_coordinates()
+
+    cluster_id_label_map:dict = data_visualizer.get_cluster_id_label_map()
     
     # Create a ListGroup item for each label
-    list_group_items = [dbc.ListGroupItem(f"{i} - {labels[i]}") for i in range(len(labels))]
+    list_group_items = [dbc.ListGroupItem(f"{k} - {v}") for k,v in cluster_id_label_map.items()]
     
     return treemap_fig, scatter_fig, parallel_fig, list_group_items
 
