@@ -226,12 +226,11 @@ class DataVisualizer():
             color='color', 
             dimensions=['mean_ghgs', 'mean_watscar', 'mean_acid'],
             labels={
-                'mean_ghgs': 'mean_ghgs (kg CO2 eq)',
-                'mean_watscar': 'mean_watscar (cubic meters)',
-                'mean_acid': 'mean_acid (pH units)'
+                'mean_ghgs': 'mean_ghgs',
+                'mean_watscar': 'mean_watscar',
+                'mean_acid': 'mean_acid'
             },
             color_continuous_scale=px.colors.diverging.Tealrose,
-            title='Parallel Coordinates Plot for Environmental Impacts'
         )
 
         fig.update_layout(
@@ -251,56 +250,58 @@ data_visualizer = DataVisualizer()
 
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 
-# app.layout = html.Div([
-#     dbc.Row([
-#         dbc.Col([
-#             dcc.Dropdown(
-#                 id='cluster-number',
-#                 options=[{'label': str(i), 'value': i} for i in range(2, 10)],
-#                 value=3,
-#                 className='mb-3'
-#             )
-#         ], width={'size': 6, 'offset': 3}),
-#     ]),
-#     dbc.Row([ 
-#         dbc.Col(dcc.Graph(id='3d-scatter-plot'), width=6),
-#         dbc.Col(dcc.Graph(id='parallel-coords-plot'), width=6),
-#     ]),
-#     dbc.Row([ 
-#         dbc.Col(dcc.Graph(id='treemap-plot'), width=12)
-#     ])
-# ])
 
 app.layout = html.Div([
-    dbc.Row([
-        dbc.Col([
-            dcc.Dropdown(
-                id='cluster-number',
-                options=[{'label': str(i), 'value': i} for i in range(2, 10)],
-                value=3,  # default value
-                className='mb-3'
-            )
-        ], width={'size': 4, 'offset': 4}),
-    ]),
-    dbc.Row([
-        dbc.Col(dcc.Loading(
-            id="loading-3d-scatter",
-            children=[dcc.Graph(id='3d-scatter-plot')],
-            type="default"),  # You can change the type to "circle", "cube", "dot", or "default"
-            width=6),
-        dbc.Col(dcc.Loading(
-            id="loading-parallel-coords",
-            children=[dcc.Graph(id='parallel-coords-plot')],
-            type="default"),
-            width=6),
-    ]),
-    dbc.Row([
-        dbc.Col(dcc.Loading(
-            id="loading-treemap",
-            children=[dcc.Graph(id='treemap-plot')],
-            type="default"),
-            width=12),
-    ])
+    dbc.Container(fluid=True,  # Make the container fluid to use the full width
+        children=[
+            dbc.Row([
+                dbc.Col([
+                    dbc.Card([
+                        dbc.CardBody([
+                            html.H5("Clusters", className="card-title"),
+                            dcc.Dropdown(
+                                id='cluster-number',
+                                options=[{'label': str(i), 'value': i} for i in range(2, 10)],
+                                value=3,
+                                className='mb-3'
+                            ),
+                        ])
+                    ], className="mb-4"),
+                ], width=2, style={'padding-right': '5px', 'padding-left': '5px'}),  # Reduce padding in columns
+                dbc.Col([
+                    dbc.Card([
+                        dbc.CardBody([
+                            dcc.Loading(
+                                id="loading-treemap",
+                                children=[dcc.Graph(id='treemap-plot')],
+                                type="default"),
+                        ], style={'padding': '0.5rem'}),
+                    ], className="mb-4"),
+                ], width=10, style={'padding-right': '5px', 'padding-left': '5px'}),
+            ]),
+            dbc.Row([
+                dbc.Col([
+                    dbc.Card([
+                        dbc.CardBody([
+                            dcc.Loading(
+                                id="loading-3d-scatter",
+                                children=[dcc.Graph(id='3d-scatter-plot')],
+                                type="default"),
+                        ])
+                    ], className="mb-4"),
+                ], width=6, style={'padding-right': '5px', 'padding-left': '5px'}),
+                dbc.Col([
+                    dbc.Card([
+                        dbc.CardBody([
+                            dcc.Loading(
+                                id="loading-parallel-coords",
+                                children=[dcc.Graph(id='parallel-coords-plot')],
+                                type="default"),
+                        ])
+                    ], className="mb-4"),
+                ], width=6, style={'padding-right': '5px', 'padding-left': '5px'}),
+            ])
+        ])
 ])
 
 
