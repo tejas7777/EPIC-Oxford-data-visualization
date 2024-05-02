@@ -91,6 +91,33 @@ class DataVisualizer():
 
         return labels
     
+    def generate_cluster_labels(self):
+        labels = []
+        label_counts = {}
+
+        for cluster_id, dists in self.cluster_distributions.items():
+            top_diet = dists['Diet Distribution'].idxmax()
+            top_diet_prop = dists['Diet Distribution'].max()
+
+            top_gender = dists['Gender Distribution'].idxmax()
+            top_gender_prop = dists['Gender Distribution'].max()
+
+            top_age_group = dists['Age Distribution'].idxmax()
+            top_age_group_prop = dists['Age Distribution'].max()
+
+            label = f"{top_diet} ({top_diet_prop:.2f}),{top_age_group} ({top_age_group_prop:.2f}) dominant"
+
+
+            if label in label_counts:
+                label_counts[label] += 1
+                label += f" - Group {label_counts[label]}"
+            else:
+                label_counts[label] = 1
+
+            labels.append(label)
+
+        return labels
+    
 
 
 
@@ -156,9 +183,9 @@ class DataVisualizer():
                             hover_name='cluster_label',  # Show cluster label on hover
                             hover_data=['hover_text'],  # Custom text with demographic info
                             labels={
-                                'mean_ghgs': 'Mean GHG Emissions',
-                                'mean_watscar': 'Mean Water Scarcity',
-                                'mean_acid': 'Mean Acidification'
+                                'mean_ghgs': 'mean_ghgs',
+                                'mean_watscar': 'mean_watscar',
+                                'mean_acid': 'mean_acid'
                             },)
         
         return fig
@@ -199,9 +226,9 @@ class DataVisualizer():
             color='color', 
             dimensions=['mean_ghgs', 'mean_watscar', 'mean_acid'],
             labels={
-                'mean_ghgs': 'GHG Emissions (kg CO2 eq)',
-                'mean_watscar': 'Water Scarcity (cubic meters)',
-                'mean_acid': 'Acidification (pH units)'
+                'mean_ghgs': 'mean_ghgs (kg CO2 eq)',
+                'mean_watscar': 'mean_watscar (cubic meters)',
+                'mean_acid': 'mean_acid (pH units)'
             },
             color_continuous_scale=px.colors.diverging.Tealrose,
             title='Parallel Coordinates Plot for Environmental Impacts'
