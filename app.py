@@ -176,12 +176,12 @@ class DataVisualizer():
 
 
         fig = px.scatter_3d(self.df,
-                            x='mean_ghgs',  # X-axis - Mean greenhouse gas emissions
-                            y='mean_watscar',  # Y-axis - Mean water scarcity
-                            z='mean_acid',  # Z-axis - Mean acidification
-                            color='cluster_label',  # Color by cluster label for readability
-                            hover_name='cluster_label',  # Show cluster label on hover
-                            hover_data=['hover_text'],  # Custom text with demographic info
+                            x='mean_ghgs',  #X-axis - Mean greenhouse gas emissions
+                            y='mean_watscar',  #Y-axis - Mean water scarcity
+                            z='mean_acid',  #Z-axis - Mean acidification
+                            color='cluster_label',  #Color by cluster label for readability
+                            hover_name='cluster_label',  #Show cluster label on hover
+                            hover_data=['hover_text'],  #Custom text with demographic info
                             labels={
                                 'mean_ghgs': 'mean_ghgs',
                                 'mean_watscar': 'mean_watscar',
@@ -235,9 +235,8 @@ class DataVisualizer():
 
         fig.update_layout(
             coloraxis_colorbar=dict(
-                title='Cluster Label',
-                tickvals=list(label_map.values()),
-                ticktext=list(label_map.keys())
+                title='Clusters',
+                tickvals=list(label_map.values())
             )
         )
 
@@ -252,13 +251,13 @@ app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 
 
 app.layout = html.Div([
-    dbc.Container(fluid=True,  # Make the container fluid to use the full width
+    dbc.Container(fluid=True,
         children=[
             dbc.Row([
                 dbc.Col([
                     dbc.Card([
                         dbc.CardBody([
-                            html.H5("Clusters", className="card-title"),
+                            html.H2("Clusters", className="card-title"),
                             dcc.Dropdown(
                                 id='cluster-number',
                                 options=[{'label': str(i), 'value': i} for i in range(2, 10)],
@@ -267,7 +266,17 @@ app.layout = html.Div([
                             ),
                         ])
                     ], className="mb-4"),
-                ], width=2, style={'padding-right': '5px', 'padding-left': '5px'}),  # Reduce padding in columns
+                    dbc.Card([
+                        dbc.CardBody([
+                            html.H2("Labels", className="card-title"),
+                            dcc.Loading(
+                                id="loading-cluster-labels",
+                                children=[dbc.ListGroup(id='cluster-labels-list', flush=True)],
+                                type="dot"  #styles: 'graph', 'cube', 'dot', or 'circle'
+                            )
+                        ])
+                    ], className="mb-4"),
+                ], width=3),
                 dbc.Col([
                     dbc.Card([
                         dbc.CardBody([
@@ -277,7 +286,7 @@ app.layout = html.Div([
                                 type="default"),
                         ], style={'padding': '0.5rem'}),
                     ], className="mb-4"),
-                ], width=10, style={'padding-right': '5px', 'padding-left': '5px'}),
+                ], width=9, style={'padding-right': '5px', 'padding-left': '5px'}),
             ]),
             dbc.Row([
                 dbc.Col([
@@ -304,24 +313,15 @@ app.layout = html.Div([
         ])
 ])
 
-
 @app.callback(
     [Output('treemap-plot', 'figure'),
      Output('3d-scatter-plot', 'figure'),
-     Output('parallel-coords-plot', 'figure')],
+     Output('parallel-coords-plot', 'figure'),
+     Output('cluster-labels-list', 'children')],
     [Input('cluster-number', 'value')]
 )
 def update_output(num_clusters):
-    data_visualizer.cluster_data(num_clusters, [
-    'mean_ghgs',  # Mean greenhouse gas emissions
-    'mean_watscar',  # Mean water scarcity
-    'mean_acid',  # Mean water use
-    'mean_eut',
-    'mean_ghgs_ch4',
-    'mean_ghgs_n2o',
-    'mean_land',
-    'mean_watscar'
-    ])
+    data_visualizer.cluster_data(num_clusters, ['mean_ghgs', 'mean_watscar', 'mean_acid', 'mean_eut', 'mean_ghgs_ch4', 'mean_ghgs_n2o', 'mean_land', 'mean_watscar'])
     # data_visualizer.cluster_data_with_pca(num_clusters,[
     # 'mean_ghgs',  # Mean greenhouse gas emissions
     # 'mean_watscar',  # Mean water scarcity
@@ -336,9 +336,13 @@ def update_output(num_clusters):
     data_visualizer.set_cluster_labels(labels)
     treemap_fig = data_visualizer.plot_treemap()
     scatter_fig = data_visualizer.plot_3D_scatter_plot()
-    plot_parallel = data_visualizer.plot_parallel_coordinates()
+    parallel_fig = data_visualizer.plot_parallel_coordinates()
+    
+    # Create a ListGroup item for each label
+    list_group_items = [dbc.ListGroupItem(f"{i} - {labels[i]}") for i in range(len(labels))]
+    
+    return treemap_fig, scatter_fig, parallel_fig, list_group_items
 
-    return treemap_fig, scatter_fig, plot_parallel
 
 server = app.server
 
