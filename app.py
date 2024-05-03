@@ -198,17 +198,19 @@ class DataVisualizer():
         for cluster_id, dists in self.cluster_distributions.items():
             for diet, diet_prop in dists['Diet Distribution'].items():
                 for age, age_prop in dists['Age Distribution'].items():
-                    rows.append({
-                        'Cluster': f"{self.cluster_distributions_dict[cluster_id]}",
-                        'Diet': diet,
-                        'Age Group': age,
-                        'Proportion': diet_prop * age_prop 
-                    })
+                    for gender, gender_prop in dists['Gender Distribution'].items():
+                            rows.append({
+                                'Cluster': f"cluster-{cluster_id} {self.cluster_distributions_dict[cluster_id]}",
+                                'Diet': diet,
+                                'Age Group': age, 
+                                'Gender': gender,
+                                'Proportion': diet_prop * age_prop * gender_prop
+                            })
 
         df_treemap = pd.DataFrame(rows)
 
         fig = px.treemap(df_treemap, 
-                        path=['Cluster', 'Diet', 'Age Group'],
+                        path=['Cluster', 'Diet', 'Age Group', 'Gender'],
                         values='Proportion',
                         color='Proportion',
                         color_continuous_scale='sunsetdark',
@@ -352,4 +354,4 @@ def update_output(num_clusters):
 server = app.server
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server(debug=False)
