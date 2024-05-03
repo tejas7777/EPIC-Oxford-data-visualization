@@ -22,11 +22,9 @@ class DataVisualizer():
         self.transform_data()
 
     def __map_to_diet(self,x):
-        if x == "meat":
-            return "low_meat"
         if x == "meat50":
-            return "med_mead"
-        if x == "meat100":
+            return "medium_meat"
+        if x in ["meat100","meat"]:
             return "high_meat"
         if x == "veggie":
             return "vegetarian"
@@ -267,10 +265,10 @@ app.layout = html.Div([
                                 id='cluster-number',
                                 options=[{'label': str(i), 'value': i} for i in range(2, 10)],
                                 value=3,
-                                className='mb-3'
+                                className='mb-2'
                             ),
                         ])
-                    ], className="mb-4"),
+                    ], className="mb-2"),
                     dbc.Card([
                         dbc.CardBody([
                             html.H6("Labels", className="card-title"),
@@ -280,7 +278,7 @@ app.layout = html.Div([
                                 type="dot"  #styles: 'graph', 'cube', 'dot', or 'circle'
                             )
                         ])
-                    ], className="mb-4"),
+                    ], className="mb-3"),
                 ], width=3),
                 dbc.Col([
                     dbc.Card([
@@ -290,7 +288,7 @@ app.layout = html.Div([
                                 children=[dcc.Graph(id='treemap-plot')],
                                 type="default"),
                         ], style={'padding': '0.0rem'}),
-                    ], className="mb-4"),
+                    ], className="mb-3"),
                 ], width=9, style={'padding-right': '5px', 'padding-left': '5px'}),
             ]),
             dbc.Row([
@@ -302,7 +300,7 @@ app.layout = html.Div([
                                 children=[dcc.Graph(id='3d-scatter-plot')],
                                 type="default"),
                         ])
-                    ], className="mb-4"),
+                    ], className="mb-1"),
                 ], width=6, style={'padding-right': '2px', 'padding-left': '2px'}),
                 dbc.Col([
                     dbc.Card([
@@ -312,7 +310,7 @@ app.layout = html.Div([
                                 children=[dcc.Graph(id='parallel-coords-plot')],
                                 type="default"),
                         ])
-                    ], className="mb-4"),
+                    ], className="mb-1"),
                 ], width=6, style={'padding-right': '2px', 'padding-left': '2px'}),
             ])
         ])
